@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.4 Market Research — Study Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple-50:#EEEDFE;--purple-200:#AFA9EC;--purple-600:#534AB7;--purple-800:#3C3489;--purple-900:#26215C;
+    --teal-50:#E1F5EE;--teal-400:#1D9E75;--teal-600:#0F6E56;--teal-800:#085041;
+    --coral-50:#FAECE7;--coral-200:#F0997B;--coral-600:#993C1D;--coral-800:#712B13;
+    --blue-50:#E6F1FB;--blue-200:#85B7EB;--blue-600:#185FA5;--blue-800:#0C447C;
+    --amber-50:#FAEEDA;--amber-400:#BA7517;--amber-600:#854F0B;--amber-800:#633806;
+    --green-50:#EAF3DE;--green-600:#3B6D11;--green-800:#27500A;
+    --gray-50:#F1EFE8;--gray-100:#D3D1C7;--gray-400:#888780;--gray-800:#444441;
+    --red-50:#FCEBEB;--red-200:#F09595;--red-600:#A32D2D;--red-800:#791F1F;
+    --bg:#f7f6f2;--surface:#ffffff;--surface2:#f0efe9;--border:#e0dfd8;--border2:#cccbc3;
+    --text:#1a1a18;--text2:#5a5955;--text3:#9a9890;
+    --radius:10px;--radius-lg:14px;--radius-xl:18px;
+    --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:16px}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+
+  /* header */
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+  .header-title{display:flex;align-items:center;gap:12px}
+  .header-icon{width:36px;height:36px;background:var(--purple-50);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .header h1{font-size:16px;font-weight:500;color:var(--text)}
+  .header p{font-size:13px;color:var(--text2)}
+  .score-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .score-pill{font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;background:var(--gray-50);border:1px solid var(--border);color:var(--text2)}
+
+  /* nav tabs */
+  .nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;gap:2px;overflow-x:auto}
+  .nav-tab{padding:12px 16px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+  .nav-tab:hover{color:var(--text)}
+  .nav-tab.active{color:var(--purple-800);border-bottom-color:var(--purple-600)}
+
+  /* main */
+  .main{max-width:760px;margin:0 auto;padding:1.5rem}
+  .panel{display:none}.panel.active{display:block}
+
+  /* progress bar */
+  .prog-wrap{height:3px;background:var(--border);border-radius:2px;margin-bottom:1.25rem;overflow:hidden}
+  .prog-fill{height:100%;background:var(--teal-400);border-radius:2px;transition:width .4s ease}
+
+  /* meta row */
+  .meta-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;font-size:13px;color:var(--text2)}
+
+  /* FLASHCARDS */
+  .fc-card-wrap{perspective:900px;height:210px;margin-bottom:1rem;cursor:pointer}
+  .fc-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+  .fc-card-wrap.flipped .fc-inner{transform:rotateY(180deg)}
+  .fc-face{position:absolute;inset:0;border-radius:var(--radius-xl);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 2rem;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+  .fc-front{background:var(--surface)}
+  .fc-back{background:var(--surface2);transform:rotateY(180deg)}
+  .fc-tag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-bottom:.75rem;letter-spacing:.02em}
+  .fc-q{font-size:17px;font-weight:500;text-align:center;line-height:1.5;color:var(--text)}
+  .fc-a{font-size:14px;text-align:center;line-height:1.6;color:var(--text2)}
+  .fc-hint{font-size:12px;color:var(--text3);margin-top:.75rem}
+  .fc-btns{display:flex;gap:8px;margin-bottom:.75rem}
+  .fc-actions{display:flex;gap:8px}
+  .btn{padding:9px 16px;border:1px solid var(--border2);border-radius:var(--radius);font-family:var(--font);font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);transition:all .15s}
+  .btn:hover{background:var(--surface2);border-color:var(--gray-400)}
+  .btn:active{transform:scale(.98)}
+  .btn-flex{flex:1}
+  .btn-correct{border-color:#9FE1CB;background:var(--teal-50);color:var(--teal-800)}
+  .btn-correct:hover{background:#c6eedf}
+  .btn-wrong{border-color:var(--red-200);background:var(--red-50);color:var(--red-800)}
+  .btn-wrong:hover{background:#fdd8d8}
+  .fc-done{text-align:center;padding:2.5rem;border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--surface)}
+  .big-num{font-size:52px;font-weight:500;line-height:1;font-family:var(--mono);color:var(--text)}
+  .done-label{font-size:14px;color:var(--text2);margin:.5rem 0 1.5rem}
+
+  /* QUIZ */
+  .quiz-q{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:var(--text)}
+  .quiz-opts{display:flex;flex-direction:column;gap:7px;margin-bottom:1rem}
+  .opt{padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:14px;cursor:pointer;text-align:left;background:var(--surface);color:var(--text);transition:all .15s;line-height:1.4;width:100%}
+  .opt:hover:not([disabled]){background:var(--surface2);border-color:var(--border2)}
+  .opt.c{border-color:#5DCAA5;background:var(--teal-50);color:var(--teal-800)}
+  .opt.w{border-color:var(--red-200);background:var(--red-50);color:var(--red-800)}
+  .opt.rv{border-color:#5DCAA5;background:var(--teal-50);color:var(--teal-800);opacity:.6}
+  .fb{padding:11px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:1rem;line-height:1.5;border:1px solid}
+  .fb-c{background:var(--teal-50);color:var(--teal-800);border-color:#9FE1CB}
+  .fb-w{background:var(--red-50);color:var(--red-800);border-color:var(--red-200)}
+  .quiz-nav{display:flex;align-items:center;justify-content:space-between}
+  .stats{display:flex;gap:14px;font-size:13px}
+  .stat-c{color:var(--teal-800);font-weight:500}
+  .stat-w{color:var(--red-800);font-weight:500}
+
+  /* SORT */
+  .sort-intro{font-size:14px;color:var(--text2);margin-bottom:1rem;line-height:1.5}
+  .sort-bank-box{background:var(--surface);border:1px dashed var(--border2);border-radius:var(--radius-lg);padding:12px;margin-bottom:1rem}
+  .sort-bank-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+  .sort-bank{display:flex;flex-wrap:wrap;gap:6px;min-height:36px}
+  .sort-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+  .sort-col{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  .sort-col-head{padding:8px 12px;font-size:12px;font-weight:500;text-align:center}
+  .sort-drop{padding:10px;min-height:70px;display:flex;flex-direction:column;gap:6px;transition:background .1s}
+  .sort-drop.drag-over{background:var(--gray-50)}
+  .sort-chip{padding:7px 10px;border-radius:8px;font-size:13px;cursor:grab;border:1px solid var(--border);background:var(--surface);color:var(--text);line-height:1.4;user-select:none;transition:opacity .15s}
+  .sort-chip:active{cursor:grabbing;opacity:.7}
+  .sort-chip.place-c{border-color:#5DCAA5;background:var(--teal-50);color:var(--teal-800);cursor:default}
+  .sort-chip.place-w{border-color:var(--red-200);background:var(--red-50);color:var(--red-800)}
+  .sort-result{padding:10px 14px;border-radius:var(--radius);font-size:13px;line-height:1.5;border:1px solid;margin-top:.75rem}
+
+  /* SCENARIOS */
+  .sc-card{border:1px solid var(--border);border-radius:var(--radius-xl);padding:1.25rem;background:var(--surface);margin-bottom:1rem}
+  .sc-tag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:.75rem}
+  .sc-q{font-size:15px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:var(--text)}
+  .sc-opts{display:flex;flex-direction:column;gap:7px}
+  .sc-opt{padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:13px;cursor:pointer;text-align:left;background:var(--surface);color:var(--text);transition:all .15s;line-height:1.4;width:100%}
+  .sc-opt:hover:not([disabled]){background:var(--surface2)}
+  .sc-opt.c{border-color:#5DCAA5;background:var(--teal-50);color:var(--teal-800)}
+  .sc-opt.w{border-color:var(--red-200);background:var(--red-50);color:var(--red-800)}
+  .sc-opt.rv{border-color:#5DCAA5;background:var(--teal-50);color:var(--teal-800);opacity:.6}
+  .sc-exp{margin-top:.75rem;padding:10px 12px;border-radius:var(--radius);font-size:13px;line-height:1.5;border:1px solid}
+  .sc-exp.good{background:var(--teal-50);color:var(--teal-800);border-color:#9FE1CB}
+  .sc-exp.bad{background:var(--red-50);color:var(--red-800);border-color:var(--red-200)}
+
+  @media(max-width:520px){
+    .main{padding:1rem}
+    .sort-cols{grid-template-columns:1fr}
+    .header{padding:.75rem 1rem}
+    .nav{padding:0 1rem}
+    .fc-q{font-size:15px}
+    .big-num{font-size:40px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">
+    <div class="header-icon">📊</div>
+    <div>
+      <h1>4.4 Market Research</h1>
+      <p>IB Business Management — Interactive Study Tool</p>
+    </div>
+  </div>
+  <div class="score-bar" id="global-scores">
+    <span class="score-pill" id="gsc-fc">Flashcards: —</span>
+    <span class="score-pill" id="gsc-quiz">Quiz: —</span>
+    <span class="score-pill" id="gsc-sc">Scenarios: —</span>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-tab active" onclick="switchTab('fc')">Flashcards</button>
+  <button class="nav-tab" onclick="switchTab('quiz')">Quiz</button>
+  <button class="nav-tab" onclick="switchTab('sort')">Sort it out</button>
+  <button class="nav-tab" onclick="switchTab('scenario')">Scenarios</button>
+</div>
+
+<div class="main">
+
+<!-- ══ FLASHCARDS ══ -->
+<div class="panel active" id="panel-fc">
+  <div class="meta-row">
+    <span id="fc-counter">Card 1 of 20</span>
+    <span id="fc-right-tally" style="color:var(--teal-600);font-weight:500"></span>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="fc-prog" style="width:0%"></div></div>
+  <div class="fc-card-wrap" id="fc-wrap" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-face fc-front">
+        <span class="fc-tag" id="fc-tag"></span>
+        <div class="fc-q" id="fc-q"></div>
+        <div class="fc-hint">Click to reveal answer</div>
+      </div>
+      <div class="fc-face fc-back">
+        <span class="fc-tag" style="background:var(--teal-50);color:var(--teal-800)">Answer</span>
+        <div class="fc-a" id="fc-a"></div>
+      </div>
+    </div>
+  </div>
+  <div id="fc-rate" style="display:none">
+    <p style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:.5rem">How did you do?</p>
+    <div class="fc-btns">
+      <button class="btn btn-flex btn-wrong" onclick="rateCard(false)">Not yet</button>
+      <button class="btn btn-flex btn-correct" onclick="rateCard(true)">Got it!</button>
+    </div>
+  </div>
+  <div id="fc-actions" class="fc-actions">
+    <button class="btn btn-flex" onclick="fcPrev()">← Prev</button>
+    <button class="btn btn-flex" onclick="fcShuffle()">Shuffle</button>
+    <button class="btn btn-flex" onclick="fcNext()">Next →</button>
+  </div>
+  <div id="fc-done" class="fc-done" style="display:none">
+    <div class="big-num" id="fc-done-num">—</div>
+    <div class="done-label">cards correct this round</div>
+    <button class="btn" onclick="restartFC()" style="padding:9px 28px">Go again</button>
+  </div>
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div class="panel" id="panel-quiz">
+  <div class="meta-row">
+    <span id="q-counter">Question 1 of 20</span>
+    <div class="stats">
+      <span>Correct: <span class="stat-c" id="qc">0</span></span>
+      <span>Wrong: <span class="stat-w" id="qw">0</span></span>
+    </div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="q-prog" style="width:0%"></div></div>
+  <div class="quiz-q" id="q-text"></div>
+  <div class="quiz-opts" id="q-opts"></div>
+  <div id="q-fb" class="fb" style="display:none"></div>
+  <div class="quiz-nav">
+    <span id="q-msg" style="font-size:13px;color:var(--text3)"></span>
+    <button class="btn" id="q-next-btn" onclick="nextQ()" style="display:none">Next →</button>
+  </div>
+  <div id="q-done" class="fc-done" style="display:none;margin-top:1.5rem">
+    <div class="big-num" id="q-done-num">—</div>
+    <div class="done-label" id="q-done-label">out of 20</div>
+    <button class="btn" onclick="restartQuiz()" style="padding:9px 28px">Retry</button>
+  </div>
+</div>
+
+<!-- ══ SORT ══ -->
+<div class="panel" id="panel-sort">
+  <div class="sort-intro" id="sort-intro"></div>
+  <div class="sort-bank-box"><div class="sort-bank-label">Drag from here</div><div class="sort-bank" id="sort-bank"></div></div>
+  <div class="sort-cols" id="sort-cols"></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-flex" onclick="checkSort()">Check answers</button>
+    <button class="btn btn-flex" onclick="nextSort()">Next round →</button>
+  </div>
+  <div id="sort-res" style="display:none"></div>
+</div>
+
+<!-- ══ SCENARIOS ══ -->
+<div class="panel" id="panel-scenario">
+  <div class="meta-row">
+    <span id="sc-counter">Scenario 1 of 8</span>
+    <span id="sc-score-lbl" style="color:var(--teal-600);font-weight:500;font-size:13px"></span>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="sc-prog" style="width:0%"></div></div>
+  <div id="sc-body"></div>
+  <div id="sc-nav">
+    <button class="btn btn-flex" id="sc-next-btn" onclick="nextSc()" style="display:none;width:100%">Next scenario →</button>
+  </div>
+  <div id="sc-done" class="fc-done" style="display:none;margin-top:1rem">
+    <div class="big-num" id="sc-done-num">—</div>
+    <div class="done-label">out of 8 scenarios</div>
+    <button class="btn" onclick="restartSc()" style="padding:9px 28px">Replay</button>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const TAGS={
+  term:{label:'Key term',bg:'#EEEDFE',c:'#3C3489'},
+  primary:{label:'Primary research',bg:'#E6F1FB',c:'#0C447C'},
+  secondary:{label:'Secondary research',bg:'#EAF3DE',c:'#27500A'},
+  sampling:{label:'Sampling',bg:'#FAEEDA',c:'#633806'},
+  ethics:{label:'Ethics',bg:'#FAECE7',c:'#712B13'},
+  qualquant:{label:'Qual vs Quant',bg:'#E1F5EE',c:'#085041'}
+};
+
+const CARDS=[
+  {tag:'term',q:'What is market research?',a:'The process of collecting, analysing, and reporting data related to a particular market — including consumption data and competitors\' behaviour.'},
+  {tag:'term',q:'What is primary research?',a:'The collection of first-hand information from the market. Also called field research.'},
+  {tag:'term',q:'What is secondary research?',a:'The collection of second-hand information from the market. Also called desk research — it analyses data that already exists.'},
+  {tag:'primary',q:'What are the four main primary research methods?',a:'Surveys, interviews, focus groups, and observation.'},
+  {tag:'secondary',q:'What are the four main secondary research methods?',a:'Academic journals, media articles, government publications, and market analyses.'},
+  {tag:'term',q:'What is a sample?',a:'A small group of people selected to represent the population or target market under research.'},
+  {tag:'sampling',q:'What is quota sampling?',a:'Segmenting a population into groups by shared characteristics (e.g. age/gender) and setting targets for how many from each group to interview.'},
+  {tag:'sampling',q:'What is random sampling?',a:'Every member of the population has an equal chance of being selected, which reduces bias.'},
+  {tag:'sampling',q:'What is stratified sampling?',a:'Dividing a population into strata with similar characteristics, then randomly selecting from each stratum to form a representative sample.'},
+  {tag:'sampling',q:'What is cluster sampling?',a:'Used for geographically dispersed populations — groups from each region (cluster) are selected, then a random sample is taken from each cluster.'},
+  {tag:'sampling',q:'What is snowball sampling?',a:'The initial group refers other individuals who could participate, and those people refer others — like a snowball effect.'},
+  {tag:'sampling',q:'What is convenience sampling?',a:'Groups selected based on their easy access and proximity to the researcher.'},
+  {tag:'qualquant',q:'What is qualitative research?',a:'The collection, analysis, and interpretation of data about consumer opinions, attitudes, or beliefs. Subjective — asks "Why?"'},
+  {tag:'qualquant',q:'What is quantitative research?',a:'The collection, analysis, and interpretation of numerical data or data that can be measured. Objective — asks "How many?"'},
+  {tag:'qualquant',q:'Name two methods typically used to collect qualitative data.',a:'Focus groups and in-depth interviews.'},
+  {tag:'qualquant',q:'Name two methods typically used to collect quantitative data.',a:'Surveys and government publications.'},
+  {tag:'ethics',q:'What are the four key ethical considerations in market research?',a:'Deceptive practices, invasion of privacy, breaches of confidentiality, and lack of objectivity.'},
+  {tag:'ethics',q:'What is "invasion of privacy" in market research?',a:'Companies collect, store and match customer information in ways that infringe on customers\' right to privacy — often without their full knowledge.'},
+  {tag:'primary',q:'What is a key advantage of primary over secondary research?',a:'The organisation that collects the data is the first to access it, giving it a competitive advantage over rivals.'},
+  {tag:'secondary',q:'State one advantage and one disadvantage of secondary research.',a:'Advantage: quicker and cheaper. Disadvantage: data may be outdated or collected for purposes other than the firm\'s specific needs.'},
+];
+
+const QQS=[
+  {q:'A beverage company sends questionnaires to customers to find preferred flavours. What primary research method is this?',opts:['Observation','Survey','Interview','Focus group'],c:1,exp:'Questionnaires sent to a target audience to gather information are surveys — the most common primary research method.'},
+  {q:'Secondary research is also known as:',opts:['Field research','Desk research','Experimental research','Observational research'],c:1,exp:'Secondary (desk) research analyses data that already exists, rather than going into the field to collect new data.'},
+  {q:'Which sampling method gives every member of the population an equal chance of being selected?',opts:['Quota sampling','Convenience sampling','Random sampling','Cluster sampling'],c:2,exp:'Random sampling ensures equal probability of selection for every individual, which reduces bias.'},
+  {q:'Qualitative research primarily seeks to answer which type of question?',opts:['"How many?"','"When?"','"Why?"','"How much?"'],c:2,exp:'Qualitative research focuses on opinions, attitudes and beliefs — asking "Why?" rather than measuring numbers.'},
+  {q:'A researcher selects participants based on who is easiest to reach. This is called:',opts:['Stratified sampling','Snowball sampling','Cluster sampling','Convenience sampling'],c:3,exp:'Convenience sampling selects groups based on their easy access and proximity to the researcher.'},
+  {q:'Which of the following is a secondary research source?',opts:['Focus group','Telephone interview','Government publication','Observation'],c:2,exp:'Government publications (census data, social trends) are secondary sources — already-existing data.'},
+  {q:'A firm collects data by watching how long customers queue at checkouts. Which primary research method is this?',opts:['Survey','Focus group','Observation','Interview'],c:2,exp:'Observation involves watching and understanding people\'s behaviour — like monitoring queue lengths.'},
+  {q:'Which sampling method is best suited to a geographically dispersed population?',opts:['Quota sampling','Cluster sampling','Random sampling','Convenience sampling'],c:1,exp:'Cluster sampling is specifically designed for populations spread across different geographic regions.'},
+  {q:'What is a key disadvantage of academic journals for market researchers?',opts:['They are too expensive','Peer-review slows publication, making info less current','They are not well referenced','They are written for profit'],c:1,exp:'The thorough peer-review process is time-consuming, meaning journal articles can lag behind the latest events or data.'},
+  {q:'What is the key advantage of snowball sampling?',opts:['It eliminates all bias','It is cost-effective through referrals','It gives everyone equal chance of selection','It is always statistically representative'],c:1,exp:'Snowball sampling is cost-effective because existing participants refer new ones — useful for hard-to-reach populations.'},
+  {q:'Which primary research method usually achieves the highest response rate?',opts:['Postal survey','Online survey','Interview','Observation'],c:2,exp:'Interviews achieve high response rates because of the one-on-one attention and opportunity to clarify questions.'},
+  {q:'A company shares customer data with affiliated partners without consent. This is an example of:',opts:['Deceptive practices','Objectivity bias','Breach of confidentiality','Invasion of privacy'],c:2,exp:'Sharing or selling customer data without consent is a breach of confidentiality — an ethical violation.'},
+  {q:'In stratified sampling, what happens after the population is divided into strata?',opts:['All members of every stratum are interviewed','A random sample is taken from each stratum','Only the largest stratum is sampled','The strata are merged'],c:1,exp:'After dividing into strata, a random sample is drawn from each stratum to ensure proportional representation.'},
+  {q:'A supermarket begins researching market trends after learning a new competitor is moving nearby. Which purpose of market research is this?',opts:['Measuring marketing strategy','Reducing product failure risk','Predicting what is likely to happen','Identifying current consumer needs'],c:2,exp:'Market research helps businesses predict future trends — like planning for new competition or economic shifts.'},
+  {q:'What is a key limitation of focus groups?',opts:['They cannot be used for new products','Small group opinions may not reflect the whole market','They require too many participants','They only generate quantitative data'],c:1,exp:'Since focus groups are small, the opinions of a few individuals may not represent the wider market.'},
+  {q:'What does "objectivity" mean as an ethical requirement in market research?',opts:['Researchers must agree with participants','Researchers must not let personal bias influence the data','Results must always be published','All data must be numerical'],c:1,exp:'Market researchers have an ethical obligation to be objective — personal bias can lead to harmful stereotypes in advertising.'},
+  {q:'Which of these is a PRIMARY research method?',opts:['Mintel market analysis report','Government census data','Telephone interview','Newspaper article'],c:2,exp:'A telephone interview involves collecting first-hand information directly from respondents — this is primary research.'},
+  {q:'Quantitative research would be used to answer which question?',opts:['Why do customers dislike our packaging?','What do customers feel about our brand?','How many units did we sell last quarter?','What motivates customer loyalty?'],c:2,exp:'Quantitative research collects numerical data — "how many units" is a measurable count question.'},
+  {q:'Which sampling method is most likely to produce a biased sample due to friend referrals?',opts:['Random sampling','Stratified sampling','Snowball sampling','Cluster sampling'],c:2,exp:'In snowball sampling, friends with similar lifestyles refer each other, creating a sample that may not represent the wider population.'},
+  {q:'Why should secondary research be carried out BEFORE primary research?',opts:['Primary research is always inaccurate','Secondary research is more detailed','Secondary gives background context; primary fills the gaps','Primary research takes less time'],c:2,exp:'Secondary research provides a broad background picture. Primary research is then used as a "gap-filling measure" for specific remaining questions.'},
+];
+
+const SORT_ROUNDS=[
+  {title:'Primary or secondary?',cols:[{name:'Primary research',bg:'#E6F1FB',c:'#0C447C'},{name:'Secondary research',bg:'#EAF3DE',c:'#27500A'}],
+   items:[{t:'Telephone interview',col:0},{t:'Focus group',col:0},{t:'Online survey',col:0},{t:'Observation in store',col:0},{t:'Academic journal',col:1},{t:'Government census',col:1},{t:'Mintel report',col:1},{t:'Newspaper article',col:1}]},
+  {title:'Qualitative or quantitative?',cols:[{name:'Qualitative',bg:'#E1F5EE',c:'#085041'},{name:'Quantitative',bg:'#EEEDFE',c:'#3C3489'}],
+   items:[{t:'Focus group on brand perception',col:0},{t:'In-depth interview on buying motives',col:0},{t:'Why customers return products',col:0},{t:'Monthly sales figures',col:1},{t:'Survey of 500 consumers',col:1},{t:'Units sold per region',col:1},{t:'Website click-through rates',col:1}]},
+  {title:'Advantage or disadvantage?',subtitle:'(of surveys)',cols:[{name:'Advantage',bg:'#E1F5EE',c:'#085041'},{name:'Disadvantage',bg:'#FCEBEB',c:'#791F1F'}],
+   items:[{t:'Collects large data quickly',col:0},{t:'Easy to administer if well-designed',col:0},{t:'Covers attitudes and opinions',col:0},{t:'Answers may be biased',col:1},{t:'Poorly designed surveys undermine research',col:1},{t:'Large samples are costly',col:1},{t:'Response rates can skew results',col:1}]},
+];
+
+const SCENARIOS=[
+  {tag:'primary',tBg:'#E6F1FB',tC:'#0C447C',q:'A clothing brand invites 8 customers to HQ to try on prototypes and share their reactions. What type of primary research is this?',opts:['Survey','Observation','Focus group','Interview'],c:2,exp:'A small group gathered to discuss/react to a product is a focus group — representative of the brand\'s customer base.'},
+  {tag:'sampling',tBg:'#FAEEDA',tC:'#633806',q:'A university divides students by year group (Year 1–4) and randomly selects 50 from each year to survey. What sampling method is this?',opts:['Quota sampling','Stratified sampling','Cluster sampling','Convenience sampling'],c:1,exp:'Dividing by year creates strata, then taking a random sample from each stratum is stratified sampling.'},
+  {tag:'ethics',tBg:'#FAECE7',tC:'#712B13',q:'A retail app silently tracks users\' GPS location and browsing to serve ads, without clearly stating this. Which ethical issue does this raise primarily?',opts:['Lack of objectivity','Breach of confidentiality','Invasion of privacy','Deceptive practices'],c:2,exp:'Secretly tracking location without meaningful user knowledge is primarily an invasion of privacy.'},
+  {tag:'qualquant',tBg:'#E1F5EE',tC:'#085041',q:'A business asks: "On a scale of 1–10, how satisfied are you?" across 2,000 customers. Is this qualitative or quantitative?',opts:['Qualitative — it\'s about feelings','Quantitative — it produces numerical scores','Both equally','Neither — it\'s observational'],c:1,exp:'A numerical scale produces measurable data that can be counted and compared — this is quantitative research.'},
+  {tag:'secondary',tBg:'#EAF3DE',tC:'#27500A',q:'A startup needs quick background data on the UK snack food market on a small budget. What\'s the best first step?',opts:['Commission a 1,000-person survey','Conduct in-depth customer interviews','Carry out secondary (desk) research first','Set up a focus group panel'],c:2,exp:'Secondary research is quicker and cheaper — carry it out first for background context before investing in primary research.'},
+  {tag:'primary',tBg:'#E6F1FB',tC:'#0C447C',q:'A hotel discovers through its own research that a specific airline often has flight cancellations, and uses this to target stranded passengers. How was this insight gathered?',opts:['Government publication','Primary research by hotel staff','Mintel market analysis','Academic journal'],c:1,exp:'This is a textbook example of primary research — the hotel collected first-hand information that gave it a competitive advantage.'},
+  {tag:'sampling',tBg:'#FAEEDA',tC:'#633806',q:'A researcher studying HIV medication adherence starts with one support group, who then refer their friends. What sampling method is this?',opts:['Cluster sampling','Convenience sampling','Snowball sampling','Random sampling'],c:2,exp:'Snowball sampling is used for sensitive research topics where participants are hard to find — the textbook cites exactly this type of example.'},
+  {tag:'ethics',tBg:'#FAECE7',tC:'#712B13',q:'A market researcher personally dislikes a demographic group and phrases survey questions to portray them negatively. Which ethical issue is this?',opts:['Invasion of privacy','Breach of confidentiality','Deceptive practices','Lack of objectivity'],c:3,exp:'Researchers have an ethical obligation to be objective. Allowing personal bias to shape questions violates objectivity and can perpetuate harmful stereotypes.'},
+];
+
+// ─── state ───
+let fcCards=[...CARDS],fcIdx=0,fcFlipped=false,fcCorrect=0,fcTotal=0;
+let qList=[...QQS],qIdx=0,qCorrect=0,qWrong=0,qAnswered=false;
+let sortRound=0,dragEl=null;
+let scIdx=0,scScore=0,scAnswered=false;
+
+// ─── utils ───
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function qs(sel){return document.querySelector(sel);}
+function el(id){return document.getElementById(id);}
+
+function switchTab(id){
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',['fc','quiz','sort','scenario'][i]===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el('panel-'+id).classList.add('active');
+}
+
+// ─── FLASHCARDS ───
+function renderFC(){
+  const c=fcCards[fcIdx];
+  const t=TAGS[c.tag];
+  const tag=el('fc-tag');tag.textContent=t.label;tag.style.background=t.bg;tag.style.color=t.c;
+  el('fc-q').textContent=c.q;el('fc-a').textContent=c.a;
+  el('fc-counter').textContent=`Card ${fcIdx+1} of ${fcCards.length}`;
+  el('fc-prog').style.width=Math.round((fcIdx/fcCards.length)*100)+'%';
+  el('fc-wrap').classList.remove('flipped');
+  el('fc-rate').style.display='none';
+  el('fc-actions').style.display='flex';
+  el('fc-right-tally').textContent=fcTotal>0?`${fcCorrect}/${fcTotal} correct`:'';
+  fcFlipped=false;
+}
+function flipCard(){
+  if(!fcFlipped){el('fc-wrap').classList.add('flipped');el('fc-rate').style.display='block';el('fc-actions').style.display='none';fcFlipped=true;}
+}
+function rateCard(ok){if(ok)fcCorrect++;fcTotal++;fcNext();}
+function fcNext(){if(fcIdx<fcCards.length-1){fcIdx++;renderFC();}else{showFCDone();}}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcShuffle(){shuffle(fcCards);fcIdx=0;fcCorrect=0;fcTotal=0;renderFC();}
+function showFCDone(){
+  el('fc-wrap').style.display='none';el('fc-rate').style.display='none';el('fc-actions').style.display='none';
+  el('fc-done').style.display='block';el('fc-done-num').textContent=fcCorrect+'/'+fcTotal;
+  el('gsc-fc').textContent=`Flashcards: ${fcCorrect}/${fcTotal}`;
+}
+function restartFC(){
+  fcIdx=0;fcCorrect=0;fcTotal=0;shuffle(fcCards);
+  el('fc-wrap').style.display='block';el('fc-done').style.display='none';renderFC();
+}
+
+// ─── QUIZ ───
+function renderQ(){
+  const q=qList[qIdx];
+  el('q-text').textContent=q.q;
+  el('q-counter').textContent=`Question ${qIdx+1} of ${qList.length}`;
+  el('q-prog').style.width=Math.round((qIdx/qList.length)*100)+'%';
+  el('q-fb').style.display='none';el('q-next-btn').style.display='none';el('q-msg').textContent='';
+  qAnswered=false;
+  const opts=el('q-opts');opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=o;
+    b.onclick=()=>answerQ(i,b,q);opts.appendChild(b);
+  });
+}
+function answerQ(i,btn,q){
+  if(qAnswered)return;qAnswered=true;
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  if(i===q.c){btn.classList.add('c');qCorrect++;el('qc').textContent=qCorrect;}
+  else{btn.classList.add('w');qWrong++;el('qw').textContent=qWrong;document.querySelectorAll('.opt')[q.c].classList.add('rv');}
+  const fb=el('q-fb');fb.className='fb '+(i===q.c?'fb-c':'fb-w');
+  fb.textContent=(i===q.c?'Correct! ':'Not quite. ')+q.exp;fb.style.display='block';
+  if(qIdx<qList.length-1){el('q-next-btn').style.display='block';}
+  else{setTimeout(showQDone,1200);}
+}
+function nextQ(){qIdx++;renderQ();}
+function showQDone(){
+  el('q-opts').innerHTML='';el('q-fb').style.display='none';el('q-next-btn').style.display='none';el('q-text').textContent='';
+  el('q-done').style.display='block';el('q-done-num').textContent=qCorrect+'/'+qList.length;
+  const p=Math.round((qCorrect/qList.length)*100);
+  el('q-done-label').textContent=`(${p}%) — ${p>=80?'Great work!':p>=60?'Good effort — review the tricky ones!':'Keep revising — you\'ll get there!'}`;
+  el('gsc-quiz').textContent=`Quiz: ${qCorrect}/${qList.length}`;
+}
+function restartQuiz(){
+  qIdx=0;qCorrect=0;qWrong=0;qAnswered=false;shuffle(qList);
+  el('q-done').style.display='none';el('qc').textContent='0';el('qw').textContent='0';renderQ();
+}
+
+// ─── SORT ───
+function buildSort(){
+  const r=SORT_ROUNDS[sortRound];
+  el('sort-intro').innerHTML=`Drag each item to the correct category. <span style="color:var(--text3)">Round ${sortRound+1} of ${SORT_ROUNDS.length}${r.subtitle?' <em style="font-style:italic">'+r.subtitle+'</em>':''}</span>`;
+  const cols=el('sort-cols');cols.innerHTML='';
+  r.cols.forEach((c,ci)=>{
+    const d=document.createElement('div');d.className='sort-col';
+    d.innerHTML=`<div class="sort-col-head" style="background:${c.bg};color:${c.c}">${c.name}</div><div class="sort-drop" id="drop-${ci}" data-col="${ci}"></div>`;
+    cols.appendChild(d);
+  });
+  const bank=el('sort-bank');bank.innerHTML='';
+  shuffle([...r.items]).forEach((item)=>{
+    const chip=document.createElement('div');chip.className='sort-chip';chip.textContent=item.t;
+    chip.draggable=true;chip.dataset.col=item.col;
+    chip.addEventListener('dragstart',e=>{dragEl=chip;e.dataTransfer.effectAllowed='move';setTimeout(()=>chip.style.opacity='.4',0);});
+    chip.addEventListener('dragend',()=>{dragEl=null;chip.style.opacity='';document.querySelectorAll('.sort-drop').forEach(z=>z.classList.remove('drag-over'));});
+    bank.appendChild(chip);
+  });
+  document.querySelectorAll('.sort-drop').forEach(zone=>{
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+    zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');if(dragEl)zone.appendChild(dragEl);});
+  });
+  bank.addEventListener('dragover',e=>{e.preventDefault();});
+  bank.addEventListener('drop',e=>{e.preventDefault();if(dragEl)bank.appendChild(dragEl);});
+  el('sort-res').style.display='none';
+}
+function checkSort(){
+  let ok=0,total=0;
+  document.querySelectorAll('.sort-drop').forEach(zone=>{
+    const ci=parseInt(zone.dataset.col);
+    zone.querySelectorAll('.sort-chip').forEach(chip=>{
+      total++;
+      if(parseInt(chip.dataset.col)===ci){chip.classList.add('place-c');chip.draggable=false;ok++;}
+      else chip.classList.add('place-w');
+    });
+  });
+  const pct=Math.round((ok/total)*100);const res=el('sort-res');res.style.display='block';
+  res.className='sort-result';
+  res.style.cssText=`display:block;padding:10px 14px;border-radius:var(--radius);font-size:13px;line-height:1.5;background:${pct===100?'var(--teal-50)':'var(--amber-50)'};color:${pct===100?'var(--teal-800)':'var(--amber-800)'};border:1px solid ${pct===100?'#9FE1CB':'#FAC775'}`;
+  res.textContent=`${ok} of ${total} correct (${pct}%).${pct===100?' Perfect round!':' Move the highlighted items and try again, or continue to the next round.'}`;
+}
+function nextSort(){sortRound=(sortRound+1)%SORT_ROUNDS.length;buildSort();}
+
+// ─── SCENARIOS ───
+function renderSc(){
+  const s=SCENARIOS[scIdx];
+  el('sc-counter').textContent=`Scenario ${scIdx+1} of ${SCENARIOS.length}`;
+  el('sc-prog').style.width=Math.round((scIdx/SCENARIOS.length)*100)+'%';
+  el('sc-score-lbl').textContent=scScore>0?`Score: ${scScore}`:'';
+  scAnswered=false;el('sc-next-btn').style.display='none';
+  const body=el('sc-body');body.innerHTML='';
+  const card=document.createElement('div');card.className='sc-card';
+  const tag=document.createElement('span');tag.className='sc-tag';
+  tag.textContent=s.tag.charAt(0).toUpperCase()+s.tag.slice(1);
+  tag.style.cssText=`background:${s.tBg};color:${s.tC}`;card.appendChild(tag);
+  const q=document.createElement('div');q.className='sc-q';q.textContent=s.q;card.appendChild(q);
+  const opts=document.createElement('div');opts.className='sc-opts';
+  s.opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='sc-opt';b.textContent=o;
+    b.onclick=()=>answerSc(i,s,opts);opts.appendChild(b);
+  });
+  card.appendChild(opts);
+  const exp=document.createElement('div');exp.id='sc-exp';exp.style.display='none';card.appendChild(exp);
+  body.appendChild(card);
+}
+function answerSc(i,s,opts){
+  if(scAnswered)return;scAnswered=true;
+  opts.querySelectorAll('.sc-opt').forEach(b=>b.disabled=true);
+  const ok=i===s.c;
+  if(ok){opts.querySelectorAll('.sc-opt')[i].classList.add('c');scScore++;el('sc-score-lbl').textContent=`Score: ${scScore}`;}
+  else{opts.querySelectorAll('.sc-opt')[i].classList.add('w');opts.querySelectorAll('.sc-opt')[s.c].classList.add('rv');}
+  const exp=el('sc-exp');exp.style.display='block';
+  exp.className='sc-exp '+(ok?'good':'bad');
+  exp.textContent=(ok?'Correct! ':'Not quite. ')+s.exp;
+  if(scIdx<SCENARIOS.length-1){el('sc-next-btn').style.display='block';}
+  else{setTimeout(showScDone,1400);}
+}
+function nextSc(){scIdx++;renderSc();}
+function showScDone(){
+  el('sc-body').innerHTML='';el('sc-next-btn').style.display='none';el('sc-done').style.display='block';
+  el('sc-done-num').textContent=scScore+'/'+SCENARIOS.length;
+  el('gsc-sc').textContent=`Scenarios: ${scScore}/${SCENARIOS.length}`;
+}
+function restartSc(){scIdx=0;scScore=0;scAnswered=false;el('sc-done').style.display='none';renderSc();}
+
+// ─── init ───
+shuffle(fcCards);shuffle(qList);
+renderFC();renderQ();buildSort();renderSc();
+</script>
+</body>
+</html>
